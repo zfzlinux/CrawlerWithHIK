@@ -25,10 +25,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    qstartwgt.cpp \
+    qshowmvstatus.cpp \
+    configdlg.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    qstartwgt.h \
+    qshowmvstatus.h \
+    configdlg.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    qstartwgt.ui \
+    qshowmvstatus.ui \
+    configdlg.ui
