@@ -1,71 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author/>
- <comment/>
- <exportmacro/>
  <class>ConfigDlg</class>
  <widget class="QDialog" name="ConfigDlg">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>631</width>
+    <height>463</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>240</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>3</number>
+       </property>
+       <widget class="cameraLoginSettingWgt" name="CameraWgt">
+        <attribute name="title">
+         <string>Camera</string>
+        </attribute>
+       </widget>
+       <widget class="SerialSettingWgt" name="SerialWgt">
+        <attribute name="title">
+         <string>Serial</string>
+        </attribute>
+       </widget>
+       <widget class="SensorWgt" name="sensorWgt">
+        <attribute name="title">
+         <string>Sensor</string>
+        </attribute>
+       </widget>
+       <widget class="CalDifSpeedInSphere" name="CalRatioWgt">
+        <attribute name="title">
+         <string>CalcRatio</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="OKBtn">
+         <property name="text">
+          <string>OK</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="CancelBtn">
+         <property name="text">
+          <string>Cancel</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
- <pixmapfunction/>
+ <customwidgets>
+  <customwidget>
+   <class>cameraLoginSettingWgt</class>
+   <extends>QWidget</extends>
+   <header>cameraloginsettingwgt.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SerialSettingWgt</class>
+   <extends>QWidget</extends>
+   <header>serialsettingwgt.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SensorWgt</class>
+   <extends>QWidget</extends>
+   <header>sensorwgt.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CalDifSpeedInSphere</class>
+   <extends>QWidget</extends>
+   <header>caldifspeedinsphere.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>ConfigDlg</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>ConfigDlg</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

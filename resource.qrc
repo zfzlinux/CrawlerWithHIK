@@ -1,2 +1,10 @@
-<!DOCTYPE RCC>
-<RCC version="1.0"/>
+<RCC>
+    <qresource prefix="/image">
+        <file>resource/red.png</file>
+        <file>resource/greenShape.png</file>
+        <file>resource/redShape.png</file>
+        <file>resource/logo.png</file>
+        <file>resource/logo32_32.ico</file>
+        <file>resource/logo64_64.ico</file>
+    </qresource>
+</RCC>

@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resource.qrc">
+    <normaloff>:/image/resource/logo32_32.ico</normaloff>:/image/resource/logo32_32.ico</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,7">
     <item>
@@ -23,10 +27,23 @@
       <item>
        <widget class="qShowMvStatus" name="showMVStatusWgt" native="true"/>
       </item>
+      <item>
+       <widget class="ServoWgt" name="servoWgt" native="true"/>
+      </item>
      </layout>
     </item>
     <item>
-     <widget class="QWidget" name="widget_3" native="true"/>
+     <widget class="QWidget" name="CamerWgt" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="displayImageLabel">
+         <property name="text">
+          <string>WaitForConnect</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -43,6 +60,7 @@
     <property name="title">
      <string>config</string>
     </property>
+    <addaction name="actioncarmera"/>
    </widget>
    <addaction name="menuconfig"/>
   </widget>
@@ -53,8 +71,14 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actioncarmera">
+   <property name="text">
+    <string>carmera</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -70,7 +94,15 @@
    <header>qshowmvstatus.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>ServoWgt</class>
+   <extends>QWidget</extends>
+   <header>servowgt.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>
