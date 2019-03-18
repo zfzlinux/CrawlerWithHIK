@@ -65,7 +65,7 @@ void qShowMvStatus::setBtnStyleSheet(QPushButton *obj, bool isPressed)
     }else
     {
         obj->setStyleSheet(QLatin1String("font: 75 9pt \"Agency FB\";\n" "font: 14pt \"Agency FB\";"));
-        this->clearCurrentSpeed();
+        //this->clearCurrentSpeed();
         this->setCurLEDStatus(RedLED);
         this->slUpdateLEDStatus();
     }
@@ -139,20 +139,28 @@ void qShowMvStatus::showDifferentialSpeedModeUI(bool isShow)
 
 void qShowMvStatus::setCurActionModePassIndex(int modeIndex)
 {
-    CrawlerStatusParam *CrawlerStatus = CrawlerStatusParam::getInstance();
+    EnumActionMode curMode;
     switch (modeIndex) {
     case 0: // speed mode
-        CrawlerStatus->setActionMode(speedMode);
+        curMode  = speedMode;
         break;
     case 1: // distance mode
-        CrawlerStatus->setActionMode(distanceMode);
+        curMode  = distanceMode;
         break;
     case 2: // difference mode
-        CrawlerStatus->setActionMode(difSpeedMode);
+        curMode  = difSpeedMode;
         break;
     default:
+        curMode  = speedMode;
         break;
     }
+
+    CrawlerStatusParam *CrawlerStatus = CrawlerStatusParam::getInstance();
+    CrawlerStatus->setActionMode(curMode);
+
+    ModbusMaster* pMDmaster = ModbusMaster::getInstance();
+    pMDmaster->setActionMode(curMode);
+
 }
 
 void qShowMvStatus::clearCurrentSpeed()
@@ -174,17 +182,19 @@ void qShowMvStatus::setBtnStyleSheet(Qt::Key keyValue, bool isPressed)
 
 void qShowMvStatus::initParam()
 {
+    quint8  curSpeedIndex;
+    quint16 PWMValueLeft,PWMValueRight;
+    pMDmaster = ModbusMaster::getInstance();
     m_crawlerStatus = CrawlerStatusParam::getInstance();
     connect(m_crawlerStatus,SIGNAL(sgUpdateCrawlerSpeedIndex(quint8)),this,SLOT(slUpdateSpeedIndex(quint8)));
     connect(m_crawlerStatus,SIGNAL(sgUpdatePWMValueByConfig(EnumPWMType,quint16)),this,SLOT(slUpdatePWMValueByConfig(EnumPWMType,quint16)));
     connect(m_crawlerStatus,SIGNAL(sgUpdateCurSpeed(double)),this,SLOT(slUpdateCurSpeed(double)));
     connect(m_crawlerStatus,SIGNAL(sgUpdateCurDistanceStatus(EnumDispModeStatus)),this,SLOT(slUpdateCurDistanceStatus(EnumDispModeStatus)));
 
-    quint8  curSpeedIndex = m_crawlerStatus->getCurCrawlerSpeedIndex();
+    curSpeedIndex = m_crawlerStatus->getCurCrawlerSpeedIndex();
     this->slUpdateSpeedIndex(curSpeedIndex);
-    //
-    quint16 PWMValueLeft = m_crawlerStatus->getCurPWMValueByConfig(PWMLeftByConfig);
-    quint16 PWMValueRight = m_crawlerStatus->getCurPWMValueByConfig(PWMRightByConfig);
+    PWMValueLeft= m_crawlerStatus->getCurPWMValueByConfig(PWMLeftByConfig);
+    PWMValueRight = m_crawlerStatus->getCurPWMValueByConfig(PWMRightByConfig);
 
     ui->LeftPWMValueSpinBox->setValue(PWMValueLeft);
     ui->RightPWMValueSpinBox->setValue(PWMValueRight);
@@ -269,25 +279,43 @@ void qShowMvStatus::on_ChangedModeBtn_clicked()
 void qShowMvStatus::on_LeftPWMValueSpinBox_editingFinished()
 {
     quint16 PWMValue =ui->LeftPWMValueSpinBox->value();
-    CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
-    crawlerSerial->setPWMValue(PWMLeftByConfig,PWMValue);
+
+//    if(ENABLE_PRIVATE_SERIAL)
+//    {
+//        CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
+//        crawlerSerial->setPWMValue(PWMLeftByConfig,PWMValue);
+//    }
+//    if(ENABLE_MODBUS)
+//    {
+//        pMDmaster->setPWMValueByConfig(PWMLeftByConfig,PWMValue);
+//    }
     ui->LeftPWMValueSpinBox->clearFocus();
+    emit this->sgUpdatePWMValueByConfig(PWMLeftByConfig,PWMValue);
 }
 
 void qShowMvStatus::on_RightPWMValueSpinBox_editingFinished()
 {
-    quint16 PWMValue =ui->LeftPWMValueSpinBox->value();
-    CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
-    crawlerSerial->setPWMValue(PWMRightByConfig,PWMValue);
+    quint16 PWMValue =ui->RightPWMValueSpinBox->value();
+//    if(ENABLE_PRIVATE_SERIAL)
+//    {
+//        CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
+//        crawlerSerial->setPWMValue(PWMRightByConfig,PWMValue);
+//    }
+//    if(ENABLE_MODBUS)
+//    {
+//        pMDmaster->setPWMValueByConfig(PWMRightByConfig,PWMValue);
+//    }
     ui->RightPWMValueSpinBox->clearFocus();
+    emit this->sgUpdatePWMValueByConfig(PWMRightByConfig,PWMValue);
 }
 
 void qShowMvStatus::on_MaxMoveValueSpinBox_editingFinished()
 {
     quint16 MaxMoveDistance = ui->MaxMoveValueSpinBox->value();
-    CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
-    crawlerSerial->setMaxDistanceMove(MaxMoveDistance);
+//    CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
+//    crawlerSerial->setMaxDistanceMove(MaxMoveDistance);
     ui->MaxMoveValueSpinBox->clearFocus();
+    emit this->sgUpdateMaxMoveValue(MaxMoveDistance);
 }
 
 void qShowMvStatus::slUpdateLEDStatus()

@@ -647,7 +647,7 @@ void CrawlerSerial::dealFB_DistanceMove(QByteArray hexCMDData)
         break;
     case FBID_DistanceValue:
         distanceByConfig = (unsigned char)hexCMDData.at(2) | (unsigned char)hexCMDData.at(3);
-        CrawlerStatus->keepCurMoveDistanceValueByConfig(distanceByConfig);
+        CrawlerStatus->keepMoveDistanceValue(distanceByConfig);
         break;
     default:
         break;

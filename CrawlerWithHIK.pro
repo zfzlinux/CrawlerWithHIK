@@ -39,7 +39,9 @@ SOURCES += \
     sensorwgt.cpp \
     caldifspeedinsphere.cpp \
     usbcamera.cpp \
-    usbcamerathread.cpp
+    usbcamerathread.cpp \
+    modbusmaster.cpp \
+    otherparamwgt.cpp
 
 HEADERS += \
         $$PWD/mainwindow.h \
@@ -57,7 +59,15 @@ HEADERS += \
     sensorwgt.h \
     caldifspeedinsphere.h \
     usbcamera.h \
-    usbcamerathread.h
+    usbcamerathread.h \
+    modbusmaster.h \
+    $$PWD/3rdpacket/libmodbus/config.h \
+    $$PWD/3rdpacket/libmodbus/modbus.h \
+    $$PWD/3rdpacket/libmodbus/modbus-rtu.h \
+    $$PWD/3rdpacket/libmodbus/modbus-private.h \
+    $$PWD/3rdpacket/libmodbus/modbus-rtu-private.h \
+    modbusreg.h \
+    otherparamwgt.h
 
 FORMS += \
         $$PWD/mainwindow.ui \
@@ -68,7 +78,15 @@ FORMS += \
     serialsettingwgt.ui \
     servowgt.ui \
     sensorwgt.ui \
-    caldifspeedinsphere.ui
+    caldifspeedinsphere.ui \
+    otherparamwgt.ui
+
+###Add Modbus
+INCLUDEPATH += \
+     $$PWD/3rdpacket/libmodbus/ \
+
+LIBS += \
+    -L$$PWD/3rdpacket/libmodbus/ -lmodbus \
 
 #Add HIK SDK_win32
 INCLUDEPATH += \
@@ -118,8 +136,11 @@ LIBS += -L$$PWD/3rdpacket/opencv/x86/vc10/lib \
     -lopencv_flann2411 \
 }
 
+
+
 RESOURCES += \
     resource.qrc
 
 DISTFILES += \
     logo.rc
+

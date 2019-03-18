@@ -28,6 +28,26 @@ void ServoWgt::setHorizontalServoAngle(quint8 angle)
     ui->servohorizontalScrollBar->setValue(angle);
 }
 
+void ServoWgt::HorizontalServoAngleUP()
+{
+    ui->servohorizontalScrollBar->setValue(ui->servohorizontalScrollBar->value()+1);
+}
+
+void ServoWgt::HorizontalServoAngleDown()
+{
+    ui->servohorizontalScrollBar->setValue(ui->servohorizontalScrollBar->value()-1);
+}
+
+void ServoWgt::VerticalServoAngleUP()
+{
+    ui->servoVerticalScrollBar->setValue(ui->servoVerticalScrollBar->value()+1);
+}
+
+void ServoWgt::VerticalServoAngleDown()
+{
+    ui->servoVerticalScrollBar->setValue(ui->servoVerticalScrollBar->value()-1);
+}
+
 void ServoWgt::slHorizontalServoAngleUP()
 {
     ui->servohorizontalScrollBar->setValue(ui->servohorizontalScrollBar->value()+1);
@@ -113,16 +133,24 @@ void ServoWgt::slLiftShaftStates(EnumLiftShaftMotorType MotorType, EnumLiftShaft
 void ServoWgt::on_servohorizontalScrollBar_valueChanged(int value)
 {
     ui->HorizontalServoAngle->setText(QString::number(value));
-    m_crawlerSerial = CrawlerSerial::getInstance();
-    m_crawlerSerial->ChangedServoAngle_Hor(value);
+    if(ENABLE_PRIVATE_SERIAL)
+    {
+        m_crawlerSerial = CrawlerSerial::getInstance();
+        m_crawlerSerial->ChangedServoAngle_Hor(value);
+    }
+    emit this->sgUpdateAngleHor(value);
+
 }
 
 void ServoWgt::on_servoVerticalScrollBar_valueChanged(int value)
 {
     ui->VerticalServoAngle->setText(QString::number(value));
-    //
-    m_crawlerSerial = CrawlerSerial::getInstance();
-    m_crawlerSerial->ChangedServoAngle_Ver(value);
+    if(ENABLE_PRIVATE_SERIAL)
+    {
+        m_crawlerSerial = CrawlerSerial::getInstance();
+        m_crawlerSerial->ChangedServoAngle_Ver(value);
+    }
+    emit this->sgUpdateAngleVer(value);
 }
 
 

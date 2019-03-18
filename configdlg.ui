@@ -19,7 +19,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>3</number>
+        <number>4</number>
        </property>
        <widget class="cameraLoginSettingWgt" name="CameraWgt">
         <attribute name="title">
@@ -39,6 +39,11 @@
        <widget class="CalDifSpeedInSphere" name="CalRatioWgt">
         <attribute name="title">
          <string>CalcRatio</string>
+        </attribute>
+       </widget>
+       <widget class="OtherParamWgt" name="OtherParam">
+        <attribute name="title">
+         <string>Other</string>
         </attribute>
        </widget>
       </widget>
@@ -101,6 +106,12 @@
    <class>CalDifSpeedInSphere</class>
    <extends>QWidget</extends>
    <header>caldifspeedinsphere.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>OtherParamWgt</class>
+   <extends>QWidget</extends>
+   <header>otherparamwgt.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

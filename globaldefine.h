@@ -312,6 +312,13 @@ typedef enum _EnumServoDirection
     vertical_servo
 }EnumServoDirection;
 
+typedef enum _LiftShaftStatus
+{
+    LS_Stop =0,
+    LS_Up,
+    LS_Down
+}LiftShaftStatus;
+
 typedef enum _EnumLiftShaftStatus
 {
     LS_MotorStop =0,
@@ -475,10 +482,10 @@ enum LimitParam
 
 enum InitParam
 {
-    InitSpeedIndex         = 5,
+    InitSpeedIndex         = 1,
     InitServoAngleHor      = 50,
     InitServoAngleVer      = 50,   
-    InitPWMValue           = 600, // MinPWMValue + PWM_PRECISION*(InitSpeedIndex-1);
+    InitPWMValue           = 300, // MinPWMValue + PWM_PRECISION*(InitSpeedIndex-1);
     InitDistanceValue      = 50,
 };
 
@@ -517,5 +524,8 @@ typedef enum _enumStatusLED
 
 #define KEY_LIFTSHAFT_HUP   Qt::Key_F
 #define KEY_LIFTSHAFT_HDOWN Qt::Key_N
+
+#define ENABLE_MODBUS       true
+#define ENABLE_PRIVATE_SERIAL !ENABLE_MODBUS
 
 #endif // GLOBALDEFINE_H

@@ -7,6 +7,7 @@
 #include "globaldefine.h"
 #include "crawlerstatusparam.h"
 #include <QTimer>
+#include "modbusmaster.h"
 namespace Ui {
 class qShowMvStatus;
 }
@@ -46,6 +47,9 @@ private slots:
 
     void on_MaxMoveValueSpinBox_editingFinished();
     void slUpdateLEDStatus();
+signals:
+    void sgUpdatePWMValueByConfig(EnumPWMType PWMType, quint16 value);
+    void sgUpdateMaxMoveValue(quint16 value);
 private:
     Ui::qShowMvStatus *ui;
     QMap<Qt::Key,QPushButton *> m_keyToBtnMap;
@@ -55,6 +59,7 @@ private:
     EnumDispModeStatus m_curDispStatus;
     EnumStatusLED m_ledStatus;
     QTimer *m_TMLEDStatus;
+    ModbusMaster* pMDmaster;
 };
 
 #endif // QSHOWMVSTATUS_H

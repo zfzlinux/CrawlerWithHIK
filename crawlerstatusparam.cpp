@@ -22,9 +22,11 @@ CrawlerStatusParam::CrawlerStatusParam(QObject *parent) : QObject(parent),
     m_curPreStatusA(Sen_DisConnect),m_curPreStatusB(Sen_DisConnect),
     m_isTopVer(false),m_isBtmVer(false),m_isTopHor(false),m_isBtmHor(false),
     m_PWMLeftConfig(InitPWMValue),m_PWMRightConfig(InitPWMValue),m_curPWMLeft(0),m_curPWMRight(0),
-    m_curDispMoveStatus(Disp_MoveStop),m_curDistanceByConfig(InitDistanceValue)
+    m_curDispMoveStatus(Disp_MoveStop),m_curDistanceByConfig(InitDistanceValue),
+    m_TMHeart(new QTimer),m_EnableHeart(true),m_TMInterval(800)
 {
     initConnect();
+    this->slUpdateHeartInterval(m_TMInterval);
 }
 
 void CrawlerStatusParam::keepCurCrawlerMovingState(EnumCrawlerMovingState movingState)
@@ -391,15 +393,43 @@ EnumDispModeStatus CrawlerStatusParam::getCurDispMoveStatus()
     return this->m_curDispMoveStatus;
 }
 
-void CrawlerStatusParam::keepCurMoveDistanceValueByConfig(quint16 value)
+void CrawlerStatusParam::keepMoveDistanceValue(quint16 value)
 {
     this->m_curDistanceByConfig = value;
-    emit this->sgUpdateCurMoveDistanceValue(this->m_curDistanceByConfig);
+    emit this->sgUpdateMaxMoveDistanceValue(this->m_curDistanceByConfig);
 }
 
 quint16 CrawlerStatusParam::getCurMoveDistanceValueByConfig()
 {
     return this->m_curDistanceByConfig;
+}
+
+void CrawlerStatusParam::loopSendHeartToCrawler()
+{
+    if(m_EnableHeart)
+    {
+        m_TMHeart->start();
+        emit this->sgSendHeartWithInterval();
+    }
+}
+
+void CrawlerStatusParam::stopSendHeartToCrawler()
+{
+    if(m_TMHeart->isActive())
+    {
+        m_TMHeart->stop();
+    }
+}
+
+void CrawlerStatusParam::slSerialReady()
+{
+    //初始化参数
+    emit this->sgUpdateCrawlerSpeedIndex(m_speedIndex);
+    emit this->sgUpdatePWMValueByConfig(PWMLeftByConfig,m_PWMLeftConfig);
+    emit this->sgUpdatePWMValueByConfig(PWMRightByConfig,m_PWMRightConfig);
+    emit this->sgUpdateCrawlerMovingState(crawler_stop);
+    emit this->sgGetCurPWMEverySecond(CurPWMLeft);
+    emit this->sgEnableHeart(m_EnableHeart);
 }
 
 void CrawlerStatusParam::slSpeedUpByActionMode()
@@ -436,11 +466,64 @@ void CrawlerStatusParam::slSpeedDownByActionMode()
     }
 }
 
+void CrawlerStatusParam::slUpdateCrawlerSpeedGear(quint8 gear)
+{
+    this->keepCurCrawlerSpeedIndex(gear);
+}
+
+void CrawlerStatusParam::slUpdatePWMValueByConfig(EnumPWMType PWMType, quint16 value)
+{
+    this->keepCurPWMValueByConfig(PWMType,value);
+}
+
+void CrawlerStatusParam::slgetCurPWMEverySecond(EnumPWMType PWMType, quint16 value)
+{
+    this->keepPWMValueEverySecond(PWMType,value);
+}
+
+void CrawlerStatusParam::slUpdateMaxMoveDistance(quint16 value)
+{
+    this->keepMoveDistanceValue(value);
+}
+
+void CrawlerStatusParam::slUpdateAngleHor(quint8 value)
+{
+    this->keepCurServoAngleHor(value);
+}
+
+void CrawlerStatusParam::slUpdateAngleVer(quint8 value)
+{
+    this->keepCurServoAngleVer(value);
+}
+
+void CrawlerStatusParam::slUpdateLiftShaftStatus(EnumLiftShaftMotorType MotorType, LiftShaftStatus status)
+{
+    this->keepCurLiftShaftStatus(MotorType,(EnumLiftShaftStatus)status);
+}
+
+void CrawlerStatusParam::slEnableHeart(bool enable)
+{
+    m_EnableHeart = enable;
+    emit this->sgEnableHeart(enable);
+}
+
+void CrawlerStatusParam::slUpdateHeartInterval(quint16 msec)
+{
+    this->m_TMHeart->setInterval(msec);
+}
+
+void CrawlerStatusParam::slTimerTimeout()
+{
+    emit this->sgSendHeartWithInterval();
+}
+
 void CrawlerStatusParam::initConnect()
 {
     CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
     connect(crawlerSerial,SIGNAL(sgSpeedUpByActionMode()),this,SLOT(slSpeedUpByActionMode()));
     connect(crawlerSerial,SIGNAL(sgSpeedDownByActionMode()),this,SLOT(slSpeedDownByActionMode()));
+
+    connect(m_TMHeart,SIGNAL(timeout()),this,SLOT(slTimerTimeout()));
 }
 
 void CrawlerStatusParam::addSpeedIndex()

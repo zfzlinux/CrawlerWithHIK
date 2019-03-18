@@ -7,7 +7,8 @@
 #include <QApplication>
 #include "crawlerserial.h"
 #include "configdlg.h"
-
+#include "modbusmaster.h"
+#include "crawlerstatusparam.h"
 namespace Ui {
 class MainWindow;
 }
@@ -23,6 +24,7 @@ private:
     bool keyPressHandler(QKeyEvent *keyValue, QObject *obj, QEvent *event);
     bool keyReleaseHandler(QKeyEvent *keyValue,QObject *obj, QEvent *event);
     void multiKeyPressProcess(Qt::Key lastKeyPress, Qt::Key currentReleasekey);
+    void initConnect();
 private slots:
     void on_actioncarmera_triggered();
 protected:
@@ -36,6 +38,8 @@ private:
     configParmeter *m_setting;
     CrawlerSerial *m_crawlerSerial;
     ConfigDlg* m_configDlg;
+    ModbusMaster* m_pMDmaster;
+    CrawlerStatusParam* m_pCrawlerStatusParam;
 };
 
 #endif // MAINWINDOW_H

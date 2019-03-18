@@ -10,6 +10,8 @@ ConfigDlg::ConfigDlg(QWidget *parent) :
     configParmeter *setting = configParmeter::getInstance();
     m_ListCameraCfg = setting->getCameraCntConfigInfo();
     connect(ui->CameraWgt,SIGNAL(sgUpdateCameraCntConfig(StruCameraCntCfg *)),this,SLOT(slUpdateCameraCntConfig(StruCameraCntCfg *)));
+    connect(ui->OtherParam,SIGNAL(sgEnableHeart(bool)),this,SIGNAL(sgEnableHeart(bool)));
+    connect(ui->OtherParam,SIGNAL(sgGetModbusReg()),this,SIGNAL(sgReadModbusReg()));
 }
 
 ConfigDlg::~ConfigDlg()
@@ -41,7 +43,6 @@ void ConfigDlg::on_OKBtn_clicked()
     }
 
     ui->SerialWgt->saveSetting();
-
 
     this->close();
 }

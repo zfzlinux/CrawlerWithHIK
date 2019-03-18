@@ -1,6 +1,7 @@
 ﻿#include "configparmeter.h"
 #include <QCoreApplication>
 #include <QFile>
+#include <QMessageBox>
 
 configParmeter *configParmeter::m_pInstance;
 
@@ -307,13 +308,21 @@ StruDisplacementModeParameter configParmeter::readDispMode()
 {
     StruDisplacementModeParameter dispMode;
 
-    dispMode.up = m_settings->value(DispMode_up).toString();
-    dispMode.down = m_settings->value(DispMode_down).toString();
-    dispMode.stop = m_settings->value(DispMode_stop).toString();
-    //
+    if(ENABLE_PRIVATE_SERIAL)
+    {
+        dispMode.up = m_settings->value(DispMode_up).toString();
+        dispMode.down = m_settings->value(DispMode_down).toString();
+        dispMode.stop = m_settings->value(DispMode_stop).toString();
+    }
+    if(ENABLE_MODBUS)
+    {
+        dispMode.up = m_settings->value(SPEEDMODE_UP).toString();
+        dispMode.down = m_settings->value(SPEEDMODE_down).toString();
+        dispMode.stop = m_settings->value(SPEEDMODE_stop).toString();
+    }
     dispMode.left = m_settings->value(SPEEDMODE_left).toString();
     dispMode.right = m_settings->value(SPEEDMODE_right).toString();
-    //
+
     dispMode.speedUp = m_settings->value(DispMode_speedup).toString();
     dispMode.speedDown = m_settings->value(DispMode_speedDown).toString();
     dispMode.displacement = m_settings->value(DispMode_displacement).toString();
@@ -493,6 +502,26 @@ QString configParmeter::getMotorCMDByMode( EnumDirectionKey key)
         break;
     }
     return strCMD;
+}
+
+EnumCrawlerMovingState configParmeter::getMotorStatusFlag(EnumDirectionKey key)
+{
+    QString temp;
+    quint16 icmd =0;
+    EnumCrawlerMovingState status = crawler_stop;
+    QString strCMD = this->getMotorCMDByMode(key);
+    if(strCMD.size()>=5)
+    {
+      temp.append(strCMD.at(3));
+      temp.append(strCMD.at(4));
+      icmd = temp.toUInt();
+    }
+//    if (distanceMode == actionMode && icmd >0)
+//    {
+//        icmd = icmd-1;//为了兼容之前的协议。权宜之计
+//    }
+    status = (EnumCrawlerMovingState)icmd;
+    return status;
 }
 
 QString configParmeter::getMotorCMDByModeQtKey(Qt::Key qtkey)

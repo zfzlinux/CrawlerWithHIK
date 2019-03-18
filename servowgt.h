@@ -18,6 +18,15 @@ public:
     ~ServoWgt();
     quint8 getHorizontalServoAngle();
     void setHorizontalServoAngle(quint8 angle);
+
+    void HorizontalServoAngleUP();
+    void HorizontalServoAngleDown();
+    void VerticalServoAngleUP();
+    void VerticalServoAngleDown();
+signals:
+    void sgUpdateAngleVer(quint8 angle);
+    void sgUpdateAngleHor(quint8 angle);
+
 private slots:
     void slHorizontalServoAngleUP();
     void slHorizontalServoAngleDown();

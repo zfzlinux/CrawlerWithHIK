@@ -5,6 +5,7 @@
 #include "globaldefine.h"
 #include "configparmeter.h"
 #include <QSerialPort>
+#include <QTimer>
 
 class CrawlerStatusParam : public QObject
 {
@@ -60,27 +61,55 @@ public:
     void keepCurDispMoveStatus(EnumDispModeStatus status);
     EnumDispModeStatus getCurDispMoveStatus();
 
-    void keepCurMoveDistanceValueByConfig(quint16 value);
+    void keepMoveDistanceValue(quint16 value);
     quint16 getCurMoveDistanceValueByConfig();
+
+    void loopSendHeartToCrawler();
+    void stopSendHeartToCrawler();
 signals:
-    void sgUpdateCrawlerMovingState();
+    //改变速度档位
     void sgUpdateCrawlerSpeedIndex(quint8 speedIndex);
+    void sgUpdatePWMValueByConfig(EnumPWMType PWMType,quint16 value);
+
+    void sgGetCurPWMEverySecond(EnumPWMType PWMType);//获取当前的速度
+    void sgUpdatePWMValueEverySecond(EnumPWMType PWMType,quint16 value);
+    void sgUpdateCurSpeed(double curSpeed);
+
+    void sgUpdateCrawlerMovingState();
+    void sgUpdateCrawlerMovingState(EnumCrawlerMovingState movingState);
+
+    void sgUpdateMaxMoveDistanceValue(quint16 value);
+    void sgUpdateCurDistanceStatus(EnumDispModeStatus status);
+
     void sgUpdateServoAngleVer(quint8 angle);
     void sgUpdateServoAngleHor(quint8 angle);
+
     void sgUpdateLiftShaftStatus(EnumLiftShaftMotorType MotorType,EnumLiftShaftStatus status);
+    void sgUpdateLimitStatus(EnumLimitSwitchType limitType, bool isLimit);
+
     void sgUpdateUTSensorValue(EnumUTSensorType sensorType,quint16 utValue);
     void sgUpdateUTSensorStatus(EnumUTSensorType sensorType,EnumSensorStatus status);
     void sgUpdatePressureValue(EnumPreSensorType sensorType,quint16 preValue);
     void sgUpdatePressureStatus(EnumPreSensorType sensorType,EnumSensorStatus status);
-    void sgUpdateLimitStatus(EnumLimitSwitchType limitType, bool isLimit);
-    void sgUpdatePWMValueByConfig(EnumPWMType PWMType,quint16 value);
-    void sgUpdatePWMValueEverySecond(EnumPWMType PWMType,quint16 value);
-    void sgUpdateCurSpeed(double curSpeed);
-    void sgUpdateCurDistanceStatus(EnumDispModeStatus status);
-    void sgUpdateCurMoveDistanceValue(quint16 value);
+
+    void sgEnableHeart(bool enable);
+    void sgSendHeartWithInterval();
+
 private slots:
+    void slSerialReady();//用于当串口准备完成时候，初始化参数
     void slSpeedUpByActionMode();
     void slSpeedDownByActionMode();
+    void slUpdateCrawlerSpeedGear(quint8 gear);
+    void slUpdatePWMValueByConfig(EnumPWMType PWMType,quint16 value);
+    void slgetCurPWMEverySecond(EnumPWMType PWMType,quint16 value);
+    void slUpdateMaxMoveDistance(quint16 value);
+    void slUpdateAngleHor(quint8 value);
+    void slUpdateAngleVer(quint8 value);
+    void slUpdateLiftShaftStatus(EnumLiftShaftMotorType MotorType,LiftShaftStatus status);
+
+    void slEnableHeart(bool enable);
+    void slUpdateHeartInterval(quint16 msec);
+    void slTimerTimeout();
 private:
     void initConnect();
     void addSpeedIndex();
@@ -102,6 +131,9 @@ private:
     quint16 m_PWMLeftConfig,m_PWMRightConfig,m_curPWMLeft,m_curPWMRight;
     quint16 m_curDistanceByConfig;
     EnumDispModeStatus m_curDispMoveStatus;
+    QTimer *m_TMHeart;
+    int m_TMInterval;
+    bool m_EnableHeart;
 };
 
 #endif // CRAWLERSTATUSPARAM_H

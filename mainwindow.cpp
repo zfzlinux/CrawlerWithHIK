@@ -78,6 +78,11 @@ MainWindow::MainWindow(QWidget *parent) :
     //
     m_crawlerSerial  = CrawlerSerial::getInstance();
 
+    m_pMDmaster = ModbusMaster::getInstance();
+
+    m_pCrawlerStatusParam = CrawlerStatusParam::getInstance();
+
+    initConnect();
 }
 
 MainWindow::~MainWindow()
@@ -91,65 +96,111 @@ bool MainWindow::keyPressHandler(QKeyEvent *keyValue, QObject *obj, QEvent *even
     switch (keyValue->key()) {
     case KEY_SEVOER_H_UP:
         if(!TMServoHorUp->isActive()) TMServoHorUp->start(200);
-        //ui->servoWgt->slHorizontalServoAngleUP();
+        ui->servoWgt->HorizontalServoAngleUP();
         break;
     case KEY_SEVOER_H_DOWN:
         if(!TMServoHorDown->isActive()) TMServoHorDown->start(200);
-        //ui->servoWgt->slHorizontalServoAngleDown();
+        ui->servoWgt->HorizontalServoAngleDown();
         break;
     case KEY_SEVOER_V_UP:
         if(!TMServoVerUp->isActive()) TMServoVerUp->start(200);
-        //ui->servoWgt->slVerticalServoAngleUP();
+        ui->servoWgt->VerticalServoAngleUP();
         break;
     case KEY_SEVOER_V_DOWN:
         if(!TMServoVerDown->isActive()) TMServoVerDown->start(200);
-        //ui->servoWgt->slVerticalServoAngleDown();
+        ui->servoWgt->VerticalServoAngleDown();
         break;
     case KEY_SPEED_UP:
         if (keyValue->isAutoRepeat()) return true;
         if(!TMChangedSpeed->isActive()) TMChangedSpeed->start(200);
-        m_crawlerSerial->setSpeedUpByActionMode();
-//        strCMD = m_setting->getMotorCMDByMode(em_speedUP);
-//        m_crawlerSerial->writerData(strCMD);
-        //ui->startWgt->writerData(strCMD);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            m_crawlerSerial->setSpeedUpByActionMode();
+        }
+        if(ENABLE_MODBUS)
+        {
+            m_pMDmaster->setSpeedUpByActionMode();
+        }
         //display
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_SPEED_UP,true);
         break;
     case KEY_SPEED_DOWN:
         if (keyValue->isAutoRepeat()) return true;
         if(!TMChangedSpeed->isActive()) TMChangedSpeed->start(200);
-        m_crawlerSerial->setSpeedDownByActionMode();
-//        strCMD = m_setting->getMotorCMDByMode(em_speedDown);
-//        m_crawlerSerial->writerData(strCMD);
-        //ui->startWgt->writerData(strCMD);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            m_crawlerSerial->setSpeedDownByActionMode();
+        }
+        if(ENABLE_MODBUS)
+        {
+            m_pMDmaster->setSpeedDownByActionMode();
+        }
         //display
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_SPEED_DOWN,true);
         break;
     case KEY_LIFTSHAFT_VUP:
-        if (keyValue->isAutoRepeat()) return true;
-        m_crawlerSerial->setupLiftShaftMotor(LS_VerMotor,LS_MotorUp);
+        if (keyValue->isAutoRepeat())return true;
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            m_crawlerSerial->setupLiftShaftMotor(LS_VerMotor,LS_MotorUp);
+        }
+        if(ENABLE_MODBUS)
+        {
+            m_pMDmaster->setLiftShaftStatus(LS_VerMotor,LS_Up);
+        }
         break;
     case KEY_LIFTSHAFT_VDOWN:
-        if (keyValue->isAutoRepeat()) return true;
-        m_crawlerSerial->setupLiftShaftMotor(LS_VerMotor,LS_MotorDown);
+        if (keyValue->isAutoRepeat())return true;
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            m_crawlerSerial->setupLiftShaftMotor(LS_VerMotor,LS_MotorDown);
+        }
+        if(ENABLE_MODBUS)
+        {
+            m_pMDmaster->setLiftShaftStatus(LS_VerMotor,LS_Down);
+        }
         break;
     case KEY_LIFTSHAFT_HUP:
-        if (keyValue->isAutoRepeat()) return true;
-        m_crawlerSerial->setupLiftShaftMotor(LS_HorMotor,LS_MotorUp);
+        if (keyValue->isAutoRepeat())return true;
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            m_crawlerSerial->setupLiftShaftMotor(LS_HorMotor,LS_MotorUp);
+        }
+        if(ENABLE_MODBUS)
+        {
+            m_pMDmaster->setLiftShaftStatus(LS_HorMotor,LS_Up);
+        }
         break;
     case KEY_LIFTSHAFT_HDOWN:
-        if (keyValue->isAutoRepeat()) return true;
-        m_crawlerSerial->setupLiftShaftMotor(LS_HorMotor,LS_MotorDown);
+        if (keyValue->isAutoRepeat())return true;
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            m_crawlerSerial->setupLiftShaftMotor(LS_HorMotor,LS_MotorDown);
+        }
+        if(ENABLE_MODBUS)
+        {
+            m_pMDmaster->setLiftShaftStatus(LS_HorMotor,LS_Down);
+        }
         break;
     case KEY_FORWARD:
         if (keyValue->isAutoRepeat()) return true;
         listKeyPress.removeAll(KEY_FORWARD);
         listKeyPress.append(KEY_FORWARD);
-        //send cmdd pass mode
-        strCMD = m_setting->getMotorCMDByMode(em_forworad);
-        m_crawlerSerial->writerData(strCMD);
-        //start send heart to crawler
-        m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            //send cmdd pass mode
+            strCMD = m_setting->getMotorCMDByMode(em_forworad);
+            m_crawlerSerial->writerData(strCMD);
+            //start send heart to crawler
+            m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        }
+        if(ENABLE_MODBUS)
+        {
+            EnumCrawlerMovingState status = crawler_stop;
+            status = m_setting->getMotorStatusFlag(em_forworad);
+            m_pMDmaster->setCrawlerMovingState(status);
+            m_pCrawlerStatusParam->loopSendHeartToCrawler();
+        }
         //display
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_FORWARD,true);
         break;
@@ -157,12 +208,23 @@ bool MainWindow::keyPressHandler(QKeyEvent *keyValue, QObject *obj, QEvent *even
         if (keyValue->isAutoRepeat()) return true;
         listKeyPress.removeAll(KEY_BACKWARD);
         listKeyPress.append(KEY_BACKWARD);
-        //send cmd pass mode
-        strCMD = m_setting->getMotorCMDByMode(em_backward);
-        m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-        //start send heart to crawler
-        m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            //send cmd pass mode
+            strCMD = m_setting->getMotorCMDByMode(em_backward);
+            m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+            //start send heart to crawler
+            m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        }
+        if(ENABLE_MODBUS)
+        {
+            EnumCrawlerMovingState status = crawler_stop;
+            status = m_setting->getMotorStatusFlag(em_backward);
+            m_pMDmaster->setCrawlerMovingState(status);
+            m_pCrawlerStatusParam->loopSendHeartToCrawler();
+        }
+
         //display
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_BACKWARD,true);
         break;
@@ -170,12 +232,23 @@ bool MainWindow::keyPressHandler(QKeyEvent *keyValue, QObject *obj, QEvent *even
         if (keyValue->isAutoRepeat()) return true;
         listKeyPress.removeAll(KEY_GOLEFT);
         listKeyPress.append(KEY_GOLEFT);
-        //send cmd pass mode
-        strCMD = m_setting->getMotorCMDByMode(em_left);
-        m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-        //start send heart to crawler
-        m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            //send cmd pass mode
+            strCMD = m_setting->getMotorCMDByMode(em_left);
+            m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+            //start send heart to crawler
+            m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        }
+        if(ENABLE_MODBUS)
+        {
+            EnumCrawlerMovingState status = crawler_stop;
+            status = m_setting->getMotorStatusFlag(em_left);
+            m_pMDmaster->setCrawlerMovingState(status);
+            m_pCrawlerStatusParam->loopSendHeartToCrawler();
+        }
+
         //display
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_GOLEFT,true);
         break;
@@ -183,11 +256,21 @@ bool MainWindow::keyPressHandler(QKeyEvent *keyValue, QObject *obj, QEvent *even
         if (keyValue->isAutoRepeat()) return true;
         listKeyPress.removeAll(KEY_GORIGHT);
         listKeyPress.append(KEY_GORIGHT);
-        strCMD = m_setting->getMotorCMDByMode(em_right);
-        m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-        //start send heart to crawler
-        m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            strCMD = m_setting->getMotorCMDByMode(em_right);
+            m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+            //start send heart to crawler
+            m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        }
+        if(ENABLE_MODBUS)
+        {
+            EnumCrawlerMovingState status = crawler_stop;
+            status = m_setting->getMotorStatusFlag(em_right);
+            m_pMDmaster->setCrawlerMovingState(status);
+            m_pCrawlerStatusParam->loopSendHeartToCrawler();
+        }
         //display
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_GORIGHT,true);
         break;
@@ -195,23 +278,34 @@ bool MainWindow::keyPressHandler(QKeyEvent *keyValue, QObject *obj, QEvent *even
         if (keyValue->isAutoRepeat()) return true;
         listKeyPress.removeAll(KEY_FRONT_LEFT);
         listKeyPress.append(KEY_FRONT_LEFT);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            strCMD = m_setting->getMotorCMDByMode(em_frontLeft);
+            m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+            //start send heart to crawler
+            m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        }
+        if(ENABLE_MODBUS)
+        {
+        }
 
-        strCMD = m_setting->getMotorCMDByMode(em_frontLeft);
-        m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-        //start send heart to crawler
-        m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
         break;
     case KEY_FRONT_RIGHT:
         if (keyValue->isAutoRepeat()) return true;
         listKeyPress.removeAll(KEY_FRONT_RIGHT);
         listKeyPress.append(KEY_FRONT_RIGHT);
-
-        strCMD = m_setting->getMotorCMDByMode(em_frontRight);
-        m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-        //start send heart to crawler
-        m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            strCMD = m_setting->getMotorCMDByMode(em_frontRight);
+            m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+            //start send heart to crawler
+            m_crawlerSerial->SendLoopHeartToCrawlerWith(true);
+        }
+        if(ENABLE_MODBUS)
+        {
+        }
         break;
     default:
         return QWidget::eventFilter(obj,event);
@@ -246,16 +340,53 @@ bool MainWindow::keyReleaseHandler(QKeyEvent *keyValue, QObject *obj, QEvent *ev
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_SPEED_DOWN,false);
         break;
     case KEY_LIFTSHAFT_VUP:
-        m_crawlerSerial->setupLiftShaftMotor(LS_VerMotor,LS_MotorStop);
+        if (keyValue->isAutoRepeat())return true;
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            m_crawlerSerial->setupLiftShaftMotor(LS_VerMotor,LS_MotorStop);
+        }
+        if(ENABLE_MODBUS)
+        {
+
+            //m_pCrawlerStatusParam->keepCurLiftShaftStatus(LS_VerMotor,LS_Stop);
+            m_pMDmaster->setLiftShaftStatus(LS_VerMotor,LS_Stop);
+        }
+        qDebug("stop");
         break;
     case KEY_LIFTSHAFT_VDOWN:
-        m_crawlerSerial->setupLiftShaftMotor(LS_VerMotor,LS_MotorStop);
+        if (keyValue->isAutoRepeat())return true;
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            m_crawlerSerial->setupLiftShaftMotor(LS_VerMotor,LS_MotorStop);
+        }
+        if(ENABLE_MODBUS)
+        {
+            m_pMDmaster->setLiftShaftStatus(LS_VerMotor,LS_Stop);
+        }
+
         break;
     case KEY_LIFTSHAFT_HUP:
-        m_crawlerSerial->setupLiftShaftMotor(LS_HorMotor,LS_MotorStop);
+        if (keyValue->isAutoRepeat())return true;
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            m_crawlerSerial->setupLiftShaftMotor(LS_HorMotor,LS_MotorStop);
+        }
+        if(ENABLE_MODBUS)
+        {
+            m_pMDmaster->setLiftShaftStatus(LS_HorMotor,LS_Stop);
+        }
+
         break;
     case KEY_LIFTSHAFT_HDOWN:
-        m_crawlerSerial->setupLiftShaftMotor(LS_HorMotor,LS_MotorStop);
+        if (keyValue->isAutoRepeat()) return true;
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            m_crawlerSerial->setupLiftShaftMotor(LS_HorMotor,LS_MotorStop);
+        }
+        if(ENABLE_MODBUS)
+        {
+            m_pMDmaster->setLiftShaftStatus(LS_HorMotor,LS_Stop);
+        }
         break;
     case KEY_FORWARD:
         if (keyValue->isAutoRepeat()) return true;
@@ -266,16 +397,22 @@ bool MainWindow::keyReleaseHandler(QKeyEvent *keyValue, QObject *obj, QEvent *ev
             multiKeyPressProcess(lastKeyValue,KEY_FORWARD);
             return true;
         }
-        //send cmd with any key press
-        strCMD = m_setting->getMotorCMDByMode(em_stop);
-         m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-
-         //start send heart to crawler
-         m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            //send cmd with any key press
+            strCMD = m_setting->getMotorCMDByMode(em_stop);
+             m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+             //start send heart to crawler
+             m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        }
+        if(ENABLE_MODBUS)
+        {
+            m_pMDmaster->setCrawlerMovingState(crawler_stop);
+            m_pCrawlerStatusParam->stopSendHeartToCrawler();
+        }
         //display
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_FORWARD,false);
-
         break;
     case KEY_BACKWARD:
         if (keyValue->isAutoRepeat()) return true;
@@ -286,12 +423,20 @@ bool MainWindow::keyReleaseHandler(QKeyEvent *keyValue, QObject *obj, QEvent *ev
             multiKeyPressProcess(lastKeyValue,KEY_BACKWARD);
             return true;
         }
-        //send cmd with any key press
-        strCMD = m_setting->getMotorCMDByMode(em_stop);
-         m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-         //start send heart to crawler
-         m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            //send cmd with any key press
+            strCMD = m_setting->getMotorCMDByMode(em_stop);
+             m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+             //start send heart to crawler
+             m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        }
+        if(ENABLE_MODBUS)
+        {
+             m_pMDmaster->setCrawlerMovingState(crawler_stop);
+             m_pCrawlerStatusParam->stopSendHeartToCrawler();
+        }
         //display
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_BACKWARD,false);
         break;
@@ -304,12 +449,21 @@ bool MainWindow::keyReleaseHandler(QKeyEvent *keyValue, QObject *obj, QEvent *ev
             multiKeyPressProcess(lastKeyValue,KEY_GOLEFT);
             return true;
         }
-        //send cmd with any key press
-        strCMD = m_setting->getMotorCMDByMode(em_stop);
-        m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-        //start send heart to crawler
-        m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            //send cmd with any key press
+            strCMD = m_setting->getMotorCMDByMode(em_stop);
+            m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+            //start send heart to crawler
+            m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        }
+        if(ENABLE_MODBUS)
+        {
+             m_pMDmaster->setCrawlerMovingState(crawler_stop);
+             m_pCrawlerStatusParam->stopSendHeartToCrawler();
+        }
+
         //display
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_GOLEFT,false);
         break;
@@ -322,12 +476,20 @@ bool MainWindow::keyReleaseHandler(QKeyEvent *keyValue, QObject *obj, QEvent *ev
             multiKeyPressProcess(lastKeyValue,KEY_GORIGHT);
             return true;
         }
-        //send cmd with any key press
-        strCMD = m_setting->getMotorCMDByMode(em_stop);
-         m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-         //start send heart to crawler
-         m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            //send cmd with any key press
+            strCMD = m_setting->getMotorCMDByMode(em_stop);
+             m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+             //start send heart to crawler
+             m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        }
+        if(ENABLE_MODBUS)
+        {
+             m_pMDmaster->setCrawlerMovingState(crawler_stop);
+             m_pCrawlerStatusParam->stopSendHeartToCrawler();
+        }
         //display
         ui->showMVStatusWgt->setBtnStyleSheet(KEY_GORIGHT,false);
         break;
@@ -340,12 +502,21 @@ bool MainWindow::keyReleaseHandler(QKeyEvent *keyValue, QObject *obj, QEvent *ev
             multiKeyPressProcess(lastKeyValue,KEY_FRONT_LEFT);
             return true;
         }
-        //send stop cmd;
-        strCMD = m_setting->getMotorCMDByMode(em_stop);
-         m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-         //start send heart to crawler
-         m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            //send stop cmd;
+            strCMD = m_setting->getMotorCMDByMode(em_stop);
+             m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+             //start send heart to crawler
+             m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        }
+        if(ENABLE_MODBUS)
+        {
+             m_pMDmaster->setCrawlerMovingState(crawler_stop);
+             m_pCrawlerStatusParam->stopSendHeartToCrawler();
+        }
+
         break;
     case KEY_FRONT_RIGHT:
         if (keyValue->isAutoRepeat()) return true;
@@ -356,11 +527,18 @@ bool MainWindow::keyReleaseHandler(QKeyEvent *keyValue, QObject *obj, QEvent *ev
             multiKeyPressProcess(lastKeyValue,KEY_FRONT_RIGHT);
             return true;
         }
-        strCMD = m_setting->getMotorCMDByMode(em_stop);
-         m_crawlerSerial->writerData(strCMD);
-//        ui->startWgt->writerData(strCMD);
-         //start send heart to crawler
-         m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        if(ENABLE_PRIVATE_SERIAL)
+        {
+            strCMD = m_setting->getMotorCMDByMode(em_stop);
+             m_crawlerSerial->writerData(strCMD);
+    //        ui->startWgt->writerData(strCMD);
+             //start send heart to crawler
+             m_crawlerSerial->SendLoopHeartToCrawlerWith(false);
+        }
+        if(ENABLE_MODBUS)
+        {
+             m_pMDmaster->setCrawlerMovingState(crawler_stop);
+        }
         break;
     default:
         return QWidget::eventFilter(obj,event);
@@ -377,6 +555,74 @@ void MainWindow::multiKeyPressProcess(Qt::Key lastKeyPress, Qt::Key currentRelea
 //    ui->startWgt->writerData(strCMD);
     //display
     ui->showMVStatusWgt->setBtnStyleSheet(currentReleasekey,false);
+}
+
+void MainWindow::initConnect()
+{
+    CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
+    CrawlerStatusParam *pstatusParam = CrawlerStatusParam::getInstance();
+    ModbusMaster*pMDmaster = ModbusMaster::getInstance();
+    if(ENABLE_PRIVATE_SERIAL)
+    {
+        connect(crawlerSerial,SIGNAL(sgSpeedUpByActionMode()),pstatusParam,SLOT(slSpeedUpByActionMode()));
+        connect(crawlerSerial,SIGNAL(sgSpeedDownByActionMode()),pstatusParam,SLOT(slSpeedDownByActionMode()));
+    }
+    if(ENABLE_MODBUS)
+    {
+        connect(m_setting,SIGNAL(sgUpdataSerialInfo()),pMDmaster,SLOT(slCloseModbus()));
+
+        connect(pMDmaster,SIGNAL(sgModbusReady()),pstatusParam,SLOT(slSerialReady()));
+
+        connect(pMDmaster,SIGNAL(sgSpeedUpByActionMode()),pstatusParam,SLOT(slSpeedUpByActionMode()));
+        connect(pMDmaster,SIGNAL(sgSpeedDownByActionMode()),pstatusParam,SLOT(slSpeedDownByActionMode()));
+
+        connect(pstatusParam,SIGNAL(sgUpdateCrawlerSpeedIndex(quint8)),pMDmaster,SLOT(slUpdateCrawlerSpeedGears(quint8)));
+        //pwmSpeed
+        connect(ui->showMVStatusWgt,SIGNAL(sgUpdatePWMValueByConfig(EnumPWMType,quint16)),
+                pstatusParam,SLOT(slUpdatePWMValueByConfig(EnumPWMType,quint16)));//
+        connect(pstatusParam,SIGNAL(sgUpdatePWMValueByConfig(EnumPWMType,quint16)),
+                pMDmaster,SLOT(slUpdatePWMValueByConfig(EnumPWMType,quint16)));
+        //curSpeed
+        connect(pstatusParam,SIGNAL(sgGetCurPWMEverySecond(EnumPWMType))
+                ,pMDmaster,SLOT(slgetCurPWMEverySecond(EnumPWMType)));
+		connect(pMDmaster,SIGNAL(sgUpdatePWMValueEverySecond(EnumPWMType,quint16)),
+			pstatusParam,SLOT(slgetCurPWMEverySecond(EnumPWMType,quint16 )));
+
+        //max distance
+        connect(ui->showMVStatusWgt,SIGNAL(sgUpdateMaxMoveValue(quint16)),
+                pstatusParam,SLOT(slUpdateMaxMoveDistance(quint16)));
+        connect(pstatusParam,SIGNAL(sgUpdateMaxMoveDistanceValue(quint16)),
+                pMDmaster,SLOT(slUpdateObjectDistance(quint16)));
+
+        //servo
+        connect(ui->servoWgt,SIGNAL(sgUpdateAngleHor(quint8)),
+                pstatusParam,SLOT(slUpdateAngleHor(quint8)));
+        connect(pstatusParam,SIGNAL(sgUpdateServoAngleHor(quint8)),
+                pMDmaster,SLOT(slUpdateAngleHor(quint8))) ;
+
+        connect(ui->servoWgt,SIGNAL(sgUpdateAngleVer(quint8)),
+                pstatusParam,SLOT(slUpdateAngleVer(quint8)));
+        connect(pstatusParam,SIGNAL(sgUpdateServoAngleVer(quint8)),
+                pMDmaster,SLOT(slUpdateAngleVer(quint8))) ;
+
+        //lift shaft
+        connect(pMDmaster,SIGNAL(sgUpdateLiftShaftStatus(EnumLiftShaftMotorType,LiftShaftStatus)),
+                pstatusParam,SLOT(slUpdateLiftShaftStatus(EnumLiftShaftMotorType,LiftShaftStatus)));
+
+        //
+        connect(m_configDlg,SIGNAL(sgEnableHeart(bool)),
+                pstatusParam,SLOT(slEnableHeart(bool)));
+        connect(pstatusParam,SIGNAL(sgEnableHeart(bool)),
+                pMDmaster,SLOT(slEnableHeart(bool)));
+        //一定间隔时间清空心跳寄存器。
+        connect(pstatusParam,SIGNAL(sgSendHeartWithInterval()),
+                pMDmaster,SLOT(slResetHeartReg()));
+
+        //read modbus register
+        connect(m_configDlg,SIGNAL(sgReadModbusReg()),
+                pMDmaster,SLOT(slGetModbusReg()));
+    }
+
 }
 
 void MainWindow::on_actioncarmera_triggered()

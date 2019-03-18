@@ -153,6 +153,7 @@ public:
     EnumActionMode getActionMode();
     void setActionMode(EnumActionMode mode);
     QString getMotorCMDByMode(EnumDirectionKey key);
+    EnumCrawlerMovingState getMotorStatusFlag(EnumDirectionKey key);
     QString getMotorCMDByModeQtKey(Qt::Key qtkey);
     QString getAskStatueCMD(EnumAskCrawlerStatus askCrawlerStatus);
 private:

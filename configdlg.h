@@ -22,6 +22,9 @@ public slots:
     void slUpdateCameraCntConfig(StruCameraCntCfg *config);
 signals:
     void sgUpdateCameraCntConfig(const StruCameraCntCfg *config);
+
+    void sgEnableHeart(bool enable);
+    void sgReadModbusReg();
 private slots:
     void on_OKBtn_clicked();
 

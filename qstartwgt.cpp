@@ -11,7 +11,7 @@
 #include "crawlerstatusparam.h"
 #include "crawlerserial.h"
 #include <QDebug>
-
+#include "modbusmaster.h"
 
 bool qStartWgt::lastStatus_USB;
 bool qStartWgt::lastStatus_IP;
@@ -57,6 +57,11 @@ qStartWgt::qStartWgt(QWidget *parent) :
     QStringList strValidDevice = m_pUsbCameraThread->findValidUsbCamera();
     ui->UsbCameraComboBox->clear();
     ui->UsbCameraComboBox->addItems(strValidDevice);
+
+    ui->UsbCameraComboBox->hide();
+    ui->USBCameraRadioButton->hide();
+    ui->USBCameraStatusLabel->hide();
+
 }
 
 qStartWgt::~qStartWgt()
@@ -279,9 +284,22 @@ void qStartWgt::setSerialDevice(const QString &portName)
 
 bool qStartWgt::openSerialDevice(QString &portName)
 {
-    this->setSerialDevice(portName); 
-    CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
-    return crawlerSerial->openCrawlerSerial(m_CrawlerSerial);
+    this->setSerialDevice(portName);
+    bool isOpened = false;
+    if(ENABLE_PRIVATE_SERIAL)
+    {
+        CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
+        isOpened = crawlerSerial->openCrawlerSerial(m_CrawlerSerial);
+    }
+    if(ENABLE_MODBUS)
+    {
+        ModbusMaster *pModbusMaster = ModbusMaster::getInstance();
+        isOpened = pModbusMaster->openModbus(m_CrawlerSerial,1);
+        //init modbus registers
+        isOpened = pModbusMaster->initRegWithSlaveNum(1);
+        //MODBUS_REG modbusReg = pModbusMaster->getModbusReg();
+    }
+    return isOpened;
 }
 
 void qStartWgt::changedUIAboutSerial(bool isOpened)
@@ -359,6 +377,7 @@ void qStartWgt::slUpdateSerial()
         this->changedUIAboutSerial(m_isSerialOpened);
         ui->OpenBtn->setEnabled(true);
     }
+
 }
 
 void qStartWgt::slUpdateSerialInfo(StruSerialInfo &serialInfo)
@@ -410,6 +429,8 @@ void qStartWgt::slInitParamDelay()
     this->mySleep(50);
     crawlerSerial->askCrawlerState(askCrawler_speed_left);
     this->mySleep(50);
+
+
 }
 
 void qStartWgt::slKeepHeartWithCrawler()
@@ -492,9 +513,20 @@ void qStartWgt::on_OpenBtn_clicked()
 
 void qStartWgt::on_restartBtn_clicked()
 {
-    //m_CrawlerSerial->close();
-    CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
-    crawlerSerial->closeCrawlerSerial();
+    //serial
+    if(ENABLE_MODBUS)
+    {
+        ModbusMaster* pMDmaster = ModbusMaster::getInstance();
+        pMDmaster->closeModbus();
+    }
+    //
+    if(ENABLE_PRIVATE_SERIAL)
+    {
+        CrawlerSerial *crawlerSerial = CrawlerSerial::getInstance();
+        crawlerSerial->closeCrawlerSerial();
+    }
+
+
     ui->OpenBtn->setEnabled(true);
     this->changedUIAboutSerial(false);
 
@@ -594,7 +626,6 @@ void qStartWgt::on_CaptureVideoBtn_toggled(bool checked)
     }
 }
 
-
 void qStartWgt::on_USBCameraRadioButton_clicked(bool checked)
 {
     if(checked != lastStatus_USB)
@@ -612,7 +643,6 @@ void qStartWgt::on_USBCameraRadioButton_clicked(bool checked)
         }else{
             ui->IPCameraRadioButton->setChecked(true);
         }
-
     }
 }
 

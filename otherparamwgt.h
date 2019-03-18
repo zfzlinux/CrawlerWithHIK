@@ -1,4 +1,4 @@
-#ifndef OTHERPARAMWGT_H
+﻿#ifndef OTHERPARAMWGT_H
 #define OTHERPARAMWGT_H
 
 #include <QWidget>
@@ -14,6 +14,15 @@ class OtherParamWgt : public QWidget
 public:
     explicit OtherParamWgt(QWidget *parent = 0);
     ~OtherParamWgt();
+
+private slots:
+
+    void on_EnableHeartCheckBox_clicked(bool checked);
+    void on_pushButton_clicked();
+
+signals:
+    void sgEnableHeart(bool enble);
+    void sgGetModbusReg();
 
 private:
     Ui::OtherParamWgt *ui;
